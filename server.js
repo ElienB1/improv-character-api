@@ -13,17 +13,17 @@ const openai = new OpenAI({
 });
 
 app.use(cors());
-app.use(express.json()); // <-- Important! This lets Express parse JSON bodies
+app.use(express.json()); // Important: allows reading JSON from POST body
 
 app.post("/generate", async (req, res) => {
   try {
-    // Use the prompt from the frontend, or a default
+    // Get the prompt from the frontend
     const prompt =
       req.body.prompt ||
-      "Create an improv character with a role and two quirky traits. Respond in JSON format with fields: role, quirk1, quirk2.";
+      "Create an improv character with a role and two quirky traits. Respond in JSON format with keys: role, quirk1, quirk2.";
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo", // or gpt-4
       messages: [
         {
           role: "user",
@@ -34,25 +34,28 @@ app.post("/generate", async (req, res) => {
       max_tokens: 150,
     });
 
-    // Get the AI's message
     const message = completion.choices[0].message.content;
 
-    // Try to parse the response as JSON
     let character = {};
     try {
       character = JSON.parse(message);
     } catch (err) {
-      // Fallback if the AI response isn't JSON
+      console.warn("⚠️ Could not parse JSON:", message);
       return res.status(200).json({
-        role: "Error parsing character",
-        quirk1: "Response was not valid JSON",
-        quirk2: "Check your OpenAI prompt formatting",
+        role: "Error parsing response",
+        quirk1: "AI did not return valid JSON",
+        quirk2: "Try again or adjust the prompt",
       });
     }
 
-    res.json(character);
+    // Respond with fallback-safe fields
+    res.json({
+      role: character.role || "No role",
+      quirk1: character.quirk1 || "No quirk 1",
+      quirk2: character.quirk2 || "No quirk 2",
+    });
   } catch (error) {
-    console.error("❌ Error in /generate:", error.message);
+    console.error("❌ Error in /generate route:", error);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
