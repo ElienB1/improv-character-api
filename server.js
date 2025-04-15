@@ -17,44 +17,73 @@ app.use(express.json());
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
-    prompt: `Create a very simple improv character for a young child. Use plain, easy-to-understand words. Respond ONLY in strict JSON format with the keys: role, quirk1, quirk2.
+    prompt: `Create a very simple improv character for a young child. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
 
-• The role should be a basic character (like “clown”, “robot”, “pirate”, “chef” — no names or complex jobs).
-• Quirks should describe fun, physical things they do (like “loves to sing”, “hops on one foot”, “always pretends to fly”).
-• Do NOT include names, titles, or advanced professions.
-• Avoid silly made-up words, personality traits, or anything scary.
+RULES:
+• The role should be a basic, playful character (e.g. "clown", "pirate", "robot").
+• Quirks must describe physical actions or simple behaviors (e.g. "hops on one foot", "always sings when walking").
+• ❌ Do NOT include names (e.g. "Mr. Wiggles") or titles (e.g. "Captain", "Dr.").
+• ❌ No fantasy or scary roles. No personality descriptions.
 
-Example: {"role":"Clown","quirk1":"Loves to sing really loud","quirk2":"Always hops on one foot"}`
+Example:
+{
+  "role": "Robot",
+  "quirk1": "Speaks in beep-boops",
+  "quirk2": "Loves bubbles"
+}`
   },
+
   2: {
     label: "Medium",
-    prompt: `Create a fun improv character with a quirky role and two imaginative quirks. Respond ONLY in strict JSON format with the keys: role, quirk1, quirk2.
+    prompt: `Create a quirky improv character with a real-world role and two unusual quirks. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
 
-• The role can be playful or weird but real-world understandable (e.g. "zookeeper", "ice cream truck driver", "mail carrier").
-• The quirks should be unexpected, slightly illogical, or sensory-based (e.g. "afraid of things starting with the letter D", or "only speaks in questions").
-• No names or made-up characters. Avoid rhyming names or overused clichés.
+RULES:
+• The role should be something plausible but fun (e.g. "ice cream truck driver", "librarian", "mail carrier").
+• Quirks should be surprising or slightly irrational (e.g. "afraid of words that start with D", "only speaks in questions").
+• ❌ No names or titles. Do NOT include "Mr.", "Dr.", "Captain", etc.
+• ❌ No fantasy elements or superpowers.
 
-Example: {"role":"Zookeeper","quirk1":"Always wears sunglasses indoors","quirk2":"Only speaks in questions"}`
+Example:
+{
+  "role": "Librarian",
+  "quirk1": "Hums the national anthem whenever nervous",
+  "quirk2": "Is afraid of things that start with the letter D"
+}`
   },
+
   3: {
     label: "Hard",
-    prompt: `Create a creative improv character with an unusual or oddly specific job and two strange, clever quirks. Respond ONLY in strict JSON format with the keys: role, quirk1, quirk2.
+    prompt: `Create a clever improv character with a niche or oddly specific role, and two strange, socially quirky behaviors. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
 
-• The role should be real or believable but unique — something like “game show host”, “wildlife park operator”, or “convention planner”.
-• The quirks should reveal deeper oddities or fixations, like "obsessed with everyone's personal details" or "writes everything backwards first".
-• Avoid magical or fantasy elements here — keep it rooted in the real world but offbeat.
+RULES:
+• The role must be grounded but unique (e.g. "wildlife park operator", "game show host", "convention planner").
+• Quirks should be unusual fixations, anxieties, or habits (e.g. "collects used receipts", "asks people’s blood type when meeting them").
+• ❌ No fantasy/sci-fi roles, no titles, and no character names.
 
-Example: {"role":"Game show host","quirk1":"Keeps score in roman numerals","quirk2":"Asks everyone for their star sign before speaking"}`
+Example:
+{
+  "role": "Game show host",
+  "quirk1": "Keeps score in Roman numerals",
+  "quirk2": "Obsessed with learning people’s middle names"
+}`
   },
+
   4: {
     label: "Very Hard",
-    prompt: `Create a complex and surreal improv character with a strange or ironic role and two long, detailed quirks. Respond ONLY in strict JSON format with the keys: role, quirk1, quirk2.
+    prompt: `Create a surreal and absurd improv character with an extremely unusual role and two long, comedic quirks. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
 
-• The role can be exaggerated, absurd, or oddly specific (e.g. “professor of magical arts”, “breakdance championship winner”, “trophy organizer”).
-• The quirks should be long, weird, or layered — like "thinks they're fluent in Italian but they're absolutely not", or "talks to their food before eating it".
-• Be humorous, surprising, and avoid repeating simple traits like “scared of heights”.
+RULES:
+• The role should sound real but absurd or ironic (e.g. "trophy organizer", "professional whisper coach", "breakdance championship winner").
+• Quirks must be complex, specific, and humorous (e.g. "talks to their food before eating it", "thinks they're fluent in Italian but clearly aren't").
+• ❌ No names or titles (e.g. "Dr.", "Captain", "Mister", etc.).
+• ❌ No fantasy/sci-fi roles or magical creatures.
 
-Example: {"role":"Breakdance championship winner","quirk1":"Greets everyone with an interpretive dance move","quirk2":"Talks to their food before eating it"}`
+Example:
+{
+  "role": "Trophy organizer",
+  "quirk1": "Talks to their food before eating it",
+  "quirk2": "Thinks they’re fluent in Italian, but clearly aren’t"
+}`
   }
 };
 
