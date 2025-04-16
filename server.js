@@ -13,23 +13,28 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// Basic IP rate limiter
+// Basic in-memory IP rate-limiting
 const rateLimit = new Map();
 
-// Store last result to prevent immediate repeats
+// Track the last generated character
 let lastCharacter = {
   role: "",
   quirk1: "",
   quirk2: ""
 };
 
-// Fuzzy match function
+// Fuzzy matching utility
 function isTooSimilar(a, b) {
   if (!a || !b) return false;
   return stringSimilarity.compareTwoStrings(a.toLowerCase(), b.toLowerCase()) > 0.55;
 }
 
-// Prompts for each difficulty level
+// Extract the core noun from a role (last word)
+function extractCoreNoun(role = "") {
+  return role.trim().split(" ").pop().toLowerCase();
+}
+
+// Difficulty-level prompts (no whimsical/magical descriptors)
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
@@ -47,9 +52,9 @@ const difficultyPrompts = {
   }
 }
 Rules:
-• Role: plain everyday noun (e.g. baker, teacher). No adjectives.
-• Quirks: realistic, short, 3–5 words max.
-• Strictly ban all fantasy, magical, whimsical, or sci-fi descriptors.`
+• Role: basic everyday noun only (e.g. baker, teacher). No adjectives.
+• Quirks: short, realistic, max 5 words.
+• Strictly ban fantasy/sci-fi words like whimsical, magical, cosmic, alien, enchanted, wizard, superhero.`
   },
   2: {
     label: "Medium",
@@ -67,9 +72,9 @@ Rules:
   }
 }
 Rules:
-• Role: short noun or noun with one grounded modifier (e.g. night-shift nurse).
-• Quirks: fun and grounded, max 5 words each.
-• Strictly ban whimsical, magical, enchanted, cosmic, or sci-fi descriptors.`
+• Role: noun or noun with realistic modifier (e.g. tired plumber).
+• Quirks: grounded and fun, ≤ 5 words.
+• Ban magical, whimsical, cosmic, enchanted, sci-fi descriptors.`
   },
   3: {
     label: "Hard",
@@ -87,9 +92,9 @@ Rules:
   }
 }
 Rules:
-• Role: may include ONE emotional adjective (e.g. pessimistic teacher).
-• Quirks: ironic or psychological but grounded. Max 6 words.
-• Absolutely no magical, whimsical, fantasy, superhero, or sci-fi language.`
+• Role: one emotional adjective + noun (e.g. anxious barista).
+• Quirks: ironic, specific, grounded. ≤ 6 words.
+• No magical, whimsical, enchanted, sci-fi or fantasy terms.`
   },
   4: {
     label: "Very Hard",
@@ -107,13 +112,13 @@ Rules:
   }
 }
 Rules:
-• Role: may include up to TWO emotional or existential adjectives (e.g. socially anxious clown).
-• Quirks: oddly specific but realistic, ≤6 words, no punctuation.
-• Strictly ban magical, whimsical, enchanted, cosmic, superhero, fantasy, or sci-fi words.`
+• Role: up to 2 emotional or existential adjectives + normal noun (e.g. melancholic accountant).
+• Quirks: oddly specific, realistic. Each ≤ 6 words. No punctuation.
+• Strict ban: whimsical, magical, cosmic, enchanted, alien, fantasy, sci-fi, wizard, superhero.`
   }
 };
 
-// Main route
+// API route
 app.post("/generate", async (req, res) => {
   const { difficulty } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
@@ -149,12 +154,15 @@ app.post("/generate", async (req, res) => {
       const currentCombo = `${character.role} | ${character.quirk1} | ${character.quirk2}`;
       const lastCombo = `${lastCharacter.role} | ${lastCharacter.quirk1} | ${lastCharacter.quirk2}`;
 
-      const isExactRoleRepeat = character.role === lastCharacter.role;
+      const currentNoun = extractCoreNoun(character.role);
+      const lastNoun = extractCoreNoun(lastCharacter.role);
+
+      const isSameNoun = currentNoun === lastNoun;
       const isFuzzyMatch = isTooSimilar(currentCombo, lastCombo);
 
       attempts++;
 
-      if (!isExactRoleRepeat && !isFuzzyMatch) break;
+      if (!isSameNoun && !isFuzzyMatch) break;
 
     } while (attempts < maxAttempts);
 
@@ -181,8 +189,8 @@ app.post("/generate", async (req, res) => {
         "@context": "https://schema.org",
         "@type": "Person",
         "@id": "#character",
-        name: "Improviser",
-        description: "A confused character who couldn’t decide what to be."
+        "name": "Improviser",
+        "description": "A confused character who couldn’t decide what to be."
       }
     });
   }
