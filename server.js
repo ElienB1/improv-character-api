@@ -13,11 +13,8 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-const difficul  1: {
-    label: "Very Easy",
-    prompt: `Create a very easy character for a young child to act out in an improv game. The role should be simple (like "clown", "mermaid", "robot", "pirate") and should NOT include names like "Mr. Wobblepants". Use clear, fun language. Avoid complex jobs or fancy words. Respond ONLY in JSON format with keys: role, quirk1, quirk2. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
-  },
-  2: {const difficultyPrompts = {
+// 🎯 Prompts by difficulty
+const difficultyPrompts = {
   1: {
     label: "Very Easy",
     prompt: `Create a very easy character for a young child to improv. Use simple words. Roles should be fun and recognizable like "clown" or "pirate". No names. Quirks should be easy to act like "loves to sing" or "hops on one foot". Respond ONLY in JSON with keys: role, quirk1, quirk2. Avoid repeating roles. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
@@ -36,21 +33,14 @@ const difficul  1: {
   }
 };
 
-    label: "Medium",
-    prompt: `Create a fun and quirky improv character. Use a more specific or unusual role (like "roller skating baker", "cloud photographer", "birthday clown"). The quirks can be strange, like "only speaks in questions" or "is afraid of things that start with the letter D". Do NOT use character names. Respond ONLY in JSON with role, quirk1, quirk2. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
-  },
-  3: {
-    label: "Hard",
-    prompt: `Create a more complex improv character. The role should be slightly advanced or ironic (e.g., "game show host", "wildlife park operator", "competitive whisperer"). The quirks should be clever or abstract, like "obsessed with knowing personal facts about everyone" or "only eats food that rhymes with their name". Avoid repeating the same role immediately. Respond ONLY in JSON format with keys: role, quirk1, quirk2.`
-  },
-  4: {
-    label: "Very Hard",
-    prompt: `Create an absurd improv character. The role should be unusual or nicconst rateLimit = new Map();
+// 🛡️ In-memory rate limiter
+const rateLimit = new Map(); // IP -> last request timestamp
 
 app.post("/generate", async (req, res) => {
   const { difficulty, cf_token } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
+  // ⏱️ Basic IP rate limiting
   const now = Date.now();
   const last = rateLimit.get(ip) || 0;
   if (now - last < 5000) {
@@ -58,10 +48,12 @@ app.post("/generate", async (req, res) => {
   }
   rateLimit.set(ip, now);
 
+  // ✅ Validate difficulty input
   if (!difficulty || !difficultyPrompts[difficulty]) {
-    return res.status(400).json({ error: "Invalid difficulty" });
+    return res.status(400).json({ error: "Invalid difficulty level" });
   }
 
+  // ✅ Turnstile CAPTCHA check (optional)
   if (process.env.CF_TURNSTILE_SECRET) {
     try {
       const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
@@ -79,7 +71,7 @@ app.post("/generate", async (req, res) => {
         return res.status(403).json({ error: "Captcha failed" });
       }
     } catch (err) {
-      console.error("Turnstile error:", err);
+      console.error("Captcha error:", err);
       return res.status(500).json({ error: "Captcha check failed" });
     }
   }
