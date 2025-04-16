@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,13 +15,5 @@
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "openai": "^4.28.4"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ElienB1/improv-character-api.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ElienB1/improv-character-api/issues"
-  },
-  "homepage": "https://github.com/ElienB1/improv-character-api#readme"
+  }
 }
