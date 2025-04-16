@@ -13,23 +13,23 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// Simple in-memory IP rate-limiter
+// Basic IP rate limiter
 const rateLimit = new Map();
 
-// Last result to prevent dupes
+// Store last result to prevent immediate repeats
 let lastCharacter = {
   role: "",
   quirk1: "",
   quirk2: ""
 };
 
-// Fuzzy duplicate check
+// Fuzzy match function
 function isTooSimilar(a, b) {
   if (!a || !b) return false;
   return stringSimilarity.compareTwoStrings(a.toLowerCase(), b.toLowerCase()) > 0.55;
 }
 
-// Prompts per difficulty (fantasy-free)
+// Prompts for each difficulty level
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
@@ -47,9 +47,9 @@ const difficultyPrompts = {
   }
 }
 Rules:
-• Role: simple everyday noun (e.g. baker, teacher). No adjectives.
-• Quirks: short, realistic, 3–5 words.
-• Ban all fantasy or sci-fi words: whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
+• Role: plain everyday noun (e.g. baker, teacher). No adjectives.
+• Quirks: realistic, short, 3–5 words max.
+• Strictly ban all fantasy, magical, whimsical, or sci-fi descriptors.`
   },
   2: {
     label: "Medium",
@@ -67,9 +67,9 @@ Rules:
   }
 }
 Rules:
-• Role: everyday noun or with 1 realistic modifier (e.g. night-shift nurse).
-• Quirks: imaginative but grounded. Max 5 words.
-• No fantasy words like whimsical, magical, cosmic, enchanted, etc.`
+• Role: short noun or noun with one grounded modifier (e.g. night-shift nurse).
+• Quirks: fun and grounded, max 5 words each.
+• Strictly ban whimsical, magical, enchanted, cosmic, or sci-fi descriptors.`
   },
   3: {
     label: "Hard",
@@ -87,9 +87,9 @@ Rules:
   }
 }
 Rules:
-• Role: may include 1 emotional adjective (e.g. pessimistic teacher).
-• Quirks: psychological or ironic but realistic. Max 6 words.
-• No fantasy, whimsical, magical, enchanted, superhero, alien, etc.`
+• Role: may include ONE emotional adjective (e.g. pessimistic teacher).
+• Quirks: ironic or psychological but grounded. Max 6 words.
+• Absolutely no magical, whimsical, fantasy, superhero, or sci-fi language.`
   },
   4: {
     label: "Very Hard",
@@ -107,12 +107,13 @@ Rules:
   }
 }
 Rules:
-• Role: can include up to 2 emotional or existential adjectives (e.g. anxious clown, chronically tired barista).
-• Quirks: oddly specific but grounded. Max 6 words each.
-• Strict ban on whimsical, magical, cosmic, fantasy, sci-fi, superhero, wizard, alien terms.`
+• Role: may include up to TWO emotional or existential adjectives (e.g. socially anxious clown).
+• Quirks: oddly specific but realistic, ≤6 words, no punctuation.
+• Strictly ban magical, whimsical, enchanted, cosmic, superhero, fantasy, or sci-fi words.`
   }
 };
 
+// Main route
 app.post("/generate", async (req, res) => {
   const { difficulty } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
@@ -148,12 +149,14 @@ app.post("/generate", async (req, res) => {
       const currentCombo = `${character.role} | ${character.quirk1} | ${character.quirk2}`;
       const lastCombo = `${lastCharacter.role} | ${lastCharacter.quirk1} | ${lastCharacter.quirk2}`;
 
+      const isExactRoleRepeat = character.role === lastCharacter.role;
+      const isFuzzyMatch = isTooSimilar(currentCombo, lastCombo);
+
       attempts++;
-      if (attempts >= maxAttempts) break;
 
-      if (!isTooSimilar(currentCombo, lastCombo)) break;
+      if (!isExactRoleRepeat && !isFuzzyMatch) break;
 
-    } while (true);
+    } while (attempts < maxAttempts);
 
     lastCharacter = {
       role: character.role,
@@ -170,7 +173,7 @@ app.post("/generate", async (req, res) => {
 
   } catch (err) {
     console.error("OpenAI / JSON parse error:", err);
-    return res.status(200).json({
+    res.status(200).json({
       role: "Oops! Not improv‑ready 😅",
       quirk1: "This one came out a bit scrambled",
       quirk2: "Try clicking generate again!",
@@ -178,8 +181,8 @@ app.post("/generate", async (req, res) => {
         "@context": "https://schema.org",
         "@type": "Person",
         "@id": "#character",
-        "name": "Improviser",
-        "description": "A confused character who couldn’t decide what to be."
+        name: "Improviser",
+        description: "A confused character who couldn’t decide what to be."
       }
     });
   }
