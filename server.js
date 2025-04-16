@@ -15,7 +15,7 @@ app.use(express.json());
 
 // ---------------- Prompts by difficulty (unchanged, full schema included)
 const difficultyPrompts = {
-  1: {
+1: {
     label: "Very Easy",
     prompt: `You are an API. Respond ONLY in raw JSON using this exact schema:
 {
@@ -30,8 +30,12 @@ const difficultyPrompts = {
     "description": string
   }
 }
-Use simple, recognizable roles and quirks for young children. Do not include names, titles, or fantastical words.`
+Rules:
+• Role = ONE plain, everyday noun (teacher, baker, plumber). NO adjectives.
+• Quirks = realistic, 3‑5 words each.
+• **Ban all fantastical or sci‑fi words**: whimsical, cosmic, magical, intergalactic, enchanted, mystical, wizard, alien, dragon, superhero, etc.`
   },
+
   2: {
     label: "Medium",
     prompt: `You are an API. Respond ONLY in raw JSON using this exact schema:
@@ -47,8 +51,12 @@ Use simple, recognizable roles and quirks for young children. Do not include nam
     "description": string
   }
 }
-Role should be playful and unique. Quirks should be imaginative and fun. No names or character titles.`
+Rules:
+• Role = short noun or noun with ONE practical modifier (e.g. "night‑shift nurse").
+• Quirks = imaginative but grounded, 3‑5 words each.
+• **Absolutely forbid** whimsical, cosmic, magical, intergalactic, enchanted, mystical, wizard, alien, dragon, superhero, etc.`
   },
+
   3: {
     label: "Hard",
     prompt: `You are an API. Respond ONLY in raw JSON using this exact schema:
@@ -64,8 +72,12 @@ Role should be playful and unique. Quirks should be imaginative and fun. No name
     "description": string
   }
 }
-Roles should be clever or ironic. Quirks can be psychological. Avoid fantasy words and character names.`
+Rules:
+• Role may have ONE emotional adjective (pessimistic, anxious, depressive, sarcastic) before the noun. Example: "pessimistic accountant".
+• Quirks = realistic or psychological, ≤ 6 words each.
+• **Ban every fantastical or sci‑fi term** (whimsical, cosmic, magical, intergalactic, enchanted, mystical, wizard, alien, dragon, superhero, etc.).`
   },
+
   4: {
     label: "Very Hard",
     prompt: `You are an API. Respond ONLY in raw JSON using this exact schema:
@@ -81,7 +93,10 @@ Roles should be clever or ironic. Quirks can be psychological. Avoid fantasy wor
     "description": string
   }
 }
-Roles should be surreal or absurd. Quirks should be long, weird, and oddly specific.`
+Rules:
+• Role may have up to TWO emotional/abstract adjectives (e.g. "existential clown", "chronically tired chef") but must end with a normal noun.
+• Quirks must be concise, realistic, oddly specific, **≤ 6 words**, no commas.
+• **Strictly ban** whimsical, cosmic, magical, intergalactic, enchanted, mystical, wizard, alien, dragon, superhero, and any other fantastical or sci‑fi descriptors.`
   }
 };
 
