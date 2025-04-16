@@ -3,6 +3,9 @@
   "name": "improv-character-api",
   "version": "1.0.0",
   "main": "index.js",
+"scripts": {
+  "start": "node server.js"
+},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
