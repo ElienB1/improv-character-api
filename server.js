@@ -1,7 +1,6 @@
-import express from "express";
+""import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import fetch from "node-fetch";
 import { OpenAI } from "openai";
 
 dotenv.config();
@@ -37,8 +36,13 @@ const difficultyPrompts = {
 const rateLimit = new Map(); // IP -> last request timestamp
 
 app.post("/generate", async (req, res) => {
-  const { difficulty, cf_token } = req.body;
+  const { difficulty, website } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // 🚫 Honeypot anti-bot field
+  if (website && website.trim() !== "") {
+    return res.status(400).json({ error: "Bot detected 🐛" });
+  }
 
   // ⏱️ Basic IP rate limiting
   const now = Date.now();
@@ -51,29 +55,6 @@ app.post("/generate", async (req, res) => {
   // ✅ Validate difficulty input
   if (!difficulty || !difficultyPrompts[difficulty]) {
     return res.status(400).json({ error: "Invalid difficulty level" });
-  }
-
-  // ✅ Turnstile CAPTCHA check (optional)
-  if (process.env.CF_TURNSTILE_SECRET) {
-    try {
-      const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret: process.env.CF_TURNSTILE_SECRET,
-          response: cf_token,
-          remoteip: ip
-        })
-      });
-
-      const verifyData = await verifyRes.json();
-      if (!verifyData.success) {
-        return res.status(403).json({ error: "Captcha failed" });
-      }
-    } catch (err) {
-      console.error("Captcha error:", err);
-      return res.status(500).json({ error: "Captcha check failed" });
-    }
   }
 
   const prompt = difficultyPrompts[difficulty].prompt;
@@ -89,20 +70,20 @@ app.post("/generate", async (req, res) => {
     const message = completion.choices[0].message.content;
 
     let character;
-try {
-  const jsonStart = message.indexOf('{');
-  const jsonEnd = message.lastIndexOf('}');
-  const jsonText = message.slice(jsonStart, jsonEnd + 1).trim();
+    try {
+      const jsonStart = message.indexOf('{');
+      const jsonEnd = message.lastIndexOf('}');
+      const jsonText = message.slice(jsonStart, jsonEnd + 1).trim();
 
-  character = JSON.parse(jsonText);
-} catch (e) {
-  console.warn("❌ Failed to parse JSON:\n", message);
-  return res.status(200).json({
-    role: "Oops! Not improv-ready 😅",
-    quirk1: "This one came out a bit scrambled",
-    quirk2: "Try clicking generate again!"
-  });
-}
+      character = JSON.parse(jsonText);
+    } catch (e) {
+      console.warn("❌ Failed to parse JSON:\n", message);
+      return res.status(200).json({
+        role: "Oops! Not improv-ready 😅",
+        quirk1: "This one came out a bit scrambled",
+        quirk2: "Try clicking generate again!"
+      });
+    }
 
     res.json({
       role: character.role || "—",
