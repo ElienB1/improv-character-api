@@ -90,7 +90,7 @@ app.post("/generate", async (req, res) => {
 
     let character;
     try {
-      character = JSON.parse(message);
+      character = JSON.parse(message.trim());
     } catch {
       console.warn("❌ Failed to parse JSON:\n", message);
       return res.status(200).json({
