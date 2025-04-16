@@ -24,9 +24,12 @@ const difficultyPrompts = {
     prompt: `Create a fun improv character. The role should be a bit more specific, like "game show host" or "wildlife park operator". Quirks should be odd or unexpected but still actable, like "only speaks in questions" or "afraid of words that start with D". Return ONLY JSON with keys: role, quirk1, quirk2. Do not use names. No extra commentary. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
   },
   3: {
-    label: "Hard",
-    prompt: `Create an unusual and clever improv character. The role should be more abstract or ironic, like "professional whisperer" or "conspiracy radio host". Quirks should be harder to act, like "asks uncomfortable questions" or "talks to their shadow". Respond ONLY in valid JSON with keys: role, quirk1, quirk2. No names or extras. Example: {"role":"Deja vu analyst","quirk1":"Thinks everything already happened","quirk2":"Refuses to say hello twice"}`
-  },
+  label: "Hard",
+  prompt: `Create a clever improv character. Respond ONLY in valid JSON with these keys: role, quirk1, quirk2. 
+The role should be unique but not abstract — things like "game show host", "wildlife park manager", or "conspiracy radio host". 
+Quirks should be weird or ironic, like "asks invasive personal questions" or "thinks their reflection is a twin". 
+NO names. NO intro or explanation. Output just the JSON like: {"role":"Game show host","quirk1":"Whispers the answers","quirk2":"Refuses to clap"}.`
+}
   4: {
     label: "Very Hard",
     prompt: `Create a surreal, absurd improv character. The role should be oddly specific, like "championship breakdancer" or "professor of magical arts". Quirks should be deeply strange or funny, like "talks to food before eating it" or "believes they’re fluent in Italian but they’re not". Output ONLY valid JSON with keys: role, quirk1, quirk2. No names or commentary. Example: {"role":"Chair therapist","quirk1":"Only speaks in metaphors","quirk2":"Keeps a goldfish in one shoe"}.`
