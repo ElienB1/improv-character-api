@@ -13,23 +13,23 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// Rate-limiting (simple in-memory)
+// Simple in-memory IP rate-limiter
 const rateLimit = new Map();
 
-// Track last generated character
+// Last result to prevent dupes
 let lastCharacter = {
   role: "",
   quirk1: "",
   quirk2: ""
 };
 
-// Fuzzy similarity comparison
+// Fuzzy duplicate check
 function isTooSimilar(a, b) {
   if (!a || !b) return false;
-  return stringSimilarity.compareTwoStrings(a.toLowerCase(), b.toLowerCase()) > 0.6;
+  return stringSimilarity.compareTwoStrings(a.toLowerCase(), b.toLowerCase()) > 0.55;
 }
 
-// Prompts per difficulty (no fantasy, no fluff)
+// Prompts per difficulty (fantasy-free)
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
@@ -47,9 +47,9 @@ const difficultyPrompts = {
   }
 }
 Rules:
-• Role: simple everyday noun only (e.g. teacher, baker, bus driver). No adjectives.
-• Quirks: realistic, short, familiar. 3–5 words max.
-• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
+• Role: simple everyday noun (e.g. baker, teacher). No adjectives.
+• Quirks: short, realistic, 3–5 words.
+• Ban all fantasy or sci-fi words: whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
   },
   2: {
     label: "Medium",
@@ -67,9 +67,9 @@ Rules:
   }
 }
 Rules:
-• Role: short noun or noun with a grounded modifier (e.g. night-shift nurse).
-• Quirks: grounded and playful, 3–5 words.
-• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
+• Role: everyday noun or with 1 realistic modifier (e.g. night-shift nurse).
+• Quirks: imaginative but grounded. Max 5 words.
+• No fantasy words like whimsical, magical, cosmic, enchanted, etc.`
   },
   3: {
     label: "Hard",
@@ -87,9 +87,9 @@ Rules:
   }
 }
 Rules:
-• Role: may include ONE emotional adjective (e.g. pessimistic teacher).
-• Quirks: psychological, ironic, realistic. Max 6 words.
-• No fantasy or sci-fi language. No whimsical, magical, cosmic, enchanted, alien, wizard, superhero, etc.`
+• Role: may include 1 emotional adjective (e.g. pessimistic teacher).
+• Quirks: psychological or ironic but realistic. Max 6 words.
+• No fantasy, whimsical, magical, enchanted, superhero, alien, etc.`
   },
   4: {
     label: "Very Hard",
@@ -107,18 +107,18 @@ Rules:
   }
 }
 Rules:
-• Role: can include up to TWO emotional or existential adjectives (e.g. "existential barista", "socially anxious plumber").
-• Quirks: oddly specific but realistic. Each ≤6 words, no punctuation.
-• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
+• Role: can include up to 2 emotional or existential adjectives (e.g. anxious clown, chronically tired barista).
+• Quirks: oddly specific but grounded. Max 6 words each.
+• Strict ban on whimsical, magical, cosmic, fantasy, sci-fi, superhero, wizard, alien terms.`
   }
 };
 
 app.post("/generate", async (req, res) => {
   const { difficulty } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-
   const now = Date.now();
   const last = rateLimit.get(ip) || 0;
+
   if (now - last < 5000) {
     return res.status(429).json({ error: "Too many requests. Please wait 5 seconds." });
   }
@@ -145,14 +145,15 @@ app.post("/generate", async (req, res) => {
       const jsonTxt = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
       character = JSON.parse(jsonTxt);
 
+      const currentCombo = `${character.role} | ${character.quirk1} | ${character.quirk2}`;
+      const lastCombo = `${lastCharacter.role} | ${lastCharacter.quirk1} | ${lastCharacter.quirk2}`;
+
       attempts++;
       if (attempts >= maxAttempts) break;
 
-    } while (
-      isTooSimilar(character.role, lastCharacter.role) ||
-      isTooSimilar(character.quirk1, lastCharacter.quirk1) ||
-      isTooSimilar(character.quirk2, lastCharacter.quirk2)
-    );
+      if (!isTooSimilar(currentCombo, lastCombo)) break;
+
+    } while (true);
 
     lastCharacter = {
       role: character.role,
@@ -177,8 +178,8 @@ app.post("/generate", async (req, res) => {
         "@context": "https://schema.org",
         "@type": "Person",
         "@id": "#character",
-        name: "Improviser",
-        description: "A confused character who couldn’t decide what to be."
+        "name": "Improviser",
+        "description": "A confused character who couldn’t decide what to be."
       }
     });
   }
