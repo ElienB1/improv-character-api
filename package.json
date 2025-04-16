@@ -1,6 +1,7 @@
 {
   "name": "improv-character-api",
   "version": "1.0.0",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,7 +15,7 @@
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
-    "openai": "^4.94.0"
+    "openai": "^4.28.4"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,5 @@
   "bugs": {
     "url": "https://github.com/ElienB1/improv-character-api/issues"
   },
-  "homepage": "https://github.com/ElienB1/improv-character-api#readme",
-  "description": ""
+  "homepage": "https://github.com/ElienB1/improv-character-api#readme"
 }
