@@ -88,16 +88,17 @@ app.post("/generate", async (req, res) => {
 
     const message = completion.choices[0].message.content;
 
-    let character;
-    try {
-      character = JSON.parse(message);
-    } catch {
-      return res.status(200).json({
-        role: "Error parsing response",
-        quirk1: "AI did not return valid JSON",
-        quirk2: "Try again or adjust the prompt"
-      });
-    }
+let character;
+try {
+  character = JSON.parse(message);
+} catch {
+  console.warn("❌ Failed to parse JSON:\n", message);
+  return res.status(200).json({
+    role: "Oops! Not improv-ready 😅",
+    quirk1: "This one came out a bit scrambled",
+    quirk2: "Try clicking generate again!"
+  });
+}
 
     res.json({
       role: character.role || "—",
