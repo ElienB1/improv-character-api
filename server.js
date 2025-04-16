@@ -13,12 +13,29 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-const difficultyPrompts = {
-  1: {
+const difficul  1: {
     label: "Very Easy",
     prompt: `Create a very easy character for a young child to act out in an improv game. The role should be simple (like "clown", "mermaid", "robot", "pirate") and should NOT include names like "Mr. Wobblepants". Use clear, fun language. Avoid complex jobs or fancy words. Respond ONLY in JSON format with keys: role, quirk1, quirk2. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
   },
+  2: {const difficultyPrompts = {
+  1: {
+    label: "Very Easy",
+    prompt: `Create a very easy character for a young child to improv. Use simple words. Roles should be fun and recognizable like "clown" or "pirate". No names. Quirks should be easy to act like "loves to sing" or "hops on one foot". Respond ONLY in JSON with keys: role, quirk1, quirk2. Avoid repeating roles. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
+  },
   2: {
+    label: "Medium",
+    prompt: `Create a fun improv character with a quirky job and two unusual, playful quirks. Use slightly more abstract or ironic traits. Roles like "game show host" or "wildlife park operator" are good. Quirks like "only speaks in questions" or "is afraid of words starting with D". No character names. Respond ONLY in JSON with role, quirk1, quirk2. Avoid repeating roles.`
+  },
+  3: {
+    label: "Hard",
+    prompt: `Create an improv character with an unusual role and two strange, clever quirks. Use abstract or ironic traits. The quirks should be harder to act and more psychological, like "asks inappropriate personal questions" or "thinks everyone is lying". Respond ONLY in JSON format with role, quirk1, quirk2. Avoid repeating roles.`
+  },
+  4: {
+    label: "Very Hard",
+    prompt: `Create a surreal or absurd improv character. The role should be highly specific like "championship breakdancer" or "professor of magical arts". The quirks should be long and funny like "talks to food before eating it" or "thinks they're fluent in Italian, but they're not". Respond ONLY in JSON with role, quirk1, quirk2. Avoid repeating roles.`
+  }
+};
+
     label: "Medium",
     prompt: `Create a fun and quirky improv character. Use a more specific or unusual role (like "roller skating baker", "cloud photographer", "birthday clown"). The quirks can be strange, like "only speaks in questions" or "is afraid of things that start with the letter D". Do NOT use character names. Respond ONLY in JSON with role, quirk1, quirk2. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
   },
@@ -28,11 +45,7 @@ const difficultyPrompts = {
   },
   4: {
     label: "Very Hard",
-    prompt: `Create an absurd improv character. The role should be unusual or niche (like "breakdance champion", "professor of magical arts", "zookeeper of imaginary creatures"). The quirks should be funny, ironic or bizarre — like "thinks they're fluent in Italian but absolutely are not" or "speaks to their food before eating it". Avoid character names and space-related ideas. Respond ONLY in JSON format with keys: role, quirk1, quirk2.`
-  }
-};
-
-const rateLimit = new Map();
+    prompt: `Create an absurd improv character. The role should be unusual or nicconst rateLimit = new Map();
 
 app.post("/generate", async (req, res) => {
   const { difficulty, cf_token } = req.body;
