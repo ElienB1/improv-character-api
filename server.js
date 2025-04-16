@@ -17,19 +17,19 @@ app.use(express.json());
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
-    prompt: `Respond ONLY in raw JSON using the keys: role, quirk1, quirk2. The role should be simple and recognizable for a young child (e.g., "clown", "pirate"). Do not use names or titles like "Mr. Wobblepants". Quirks should be very easy to act, like "hops on one foot" or "loves to sing". Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Adjectives that reflect emotion or personality (like "sad", "grumpy") are fine. Example: {"role":"Clown","quirk1":"Juggles invisible balls","quirk2":"Laughs every 5 seconds"}`
+    prompt: `You are an API. Respond ONLY in raw JSON using this schema: {\"role\": string, \"quirk1\": string, \"quirk2\": string}. The role should be simple and recognizable for a young child (e.g., \"clown\", \"pirate\"). Do not use names or titles like \"Mr. Wobblepants\". Quirks should be very easy to act, like \"hops on one foot\" or \"loves to sing\". Do not add descriptive or fantastical words like \"whimsical\" or \"intergalactic\". Adjectives that reflect emotion or personality (like \"sad\", \"grumpy\") are fine.`
   },
   2: {
     label: "Medium",
-    prompt: `You are an API. Respond ONLY with raw JSON using the keys: role, quirk1, quirk2. The role should be playful and unique (like "roller skating baker" or "cloud photographer"). Do NOT use names or character titles. Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Adjectives that reflect mood or personality (like "pessimistic") are fine. The quirks should be fun and imaginative (like "Only speaks in questions" or "Afraid of things starting with the letter D"). No explanation. No formatting. Example: {"role":"Cloud photographer","quirk1":"Carries a ladder everywhere","quirk2":"Names each cloud they see"}`
+    prompt: `You are an API. Respond ONLY in raw JSON using this schema: {\"role\": string, \"quirk1\": string, \"quirk2\": string}. The role should be playful and unique (like \"roller skating baker\" or \"cloud photographer\"). Do NOT use names or character titles. The quirks should be fun and imaginative (like \"Only speaks in questions\" or \"Afraid of things starting with the letter D\"). Do not add descriptive or fantastical words like \"whimsical\" or \"intergalactic\". Mood or personality-based adjectives like \"pessimistic\" are fine.`
   },
   3: {
     label: "Hard",
-    prompt: `Respond ONLY in raw JSON with keys: role, quirk1, quirk2. Do NOT include commentary, titles, or explanation. The role should be clever and ironic (e.g., "conspiracy radio host", "pessimistic mime"). Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Mood or personality words like "grumpy" or "anxious" are allowed. The quirks should be psychological, like "asks overly personal questions" or "only eats foods that rhyme with their name". Example: {"role":"Conspiracy radio host","quirk1":"Whispers secrets to themselves","quirk2":"Believes pigeons are spies"}`
+    prompt: `You are an API. Respond ONLY in raw JSON using this schema: {\"role\": string, \"quirk1\": string, \"quirk2\": string}. The role should be clever and ironic (e.g., \"conspiracy radio host\"). Avoid names and descriptive or fantastical words like \"intergalactic\" or \"whimsical\". Mood-based adjectives like \"anxious\" or \"pessimistic\" are allowed. The quirks should be psychological, like \"asks overly personal questions\" or \"believes everyone is a clone\".`
   },
   4: {
     label: "Very Hard",
-    prompt: `Create a surreal and absurd improv character. The role should be highly specific and advanced, like "professor of magical arts" or "championship breakdancer". Do not use names or character titles. Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Personality-based words like "pessimistic", "sad", or "grumpy" are okay. Quirks should be long, weird, and funny (e.g., "talks to food before eating it", "thinks they are fluent in Italian but they're not"). Respond ONLY in strict JSON format like {"role":"Chair therapist","quirk1":"Only speaks in metaphors","quirk2":"Keeps a live goldfish in one shoe"}`
+    prompt: `You are an API. Respond ONLY in raw JSON using this schema: {\"role\": string, \"quirk1\": string, \"quirk2\": string}. The role should be surreal or absurd (e.g., \"chair therapist\", \"time-traveling tea critic\"). Avoid names or overly descriptive fantasy words. Quirks should be long, unexpected, and weirdly specific (e.g., \"Talks to food before eating it\", \"Keeps a live goldfish in one shoe\").`
   }
 };
 
@@ -88,17 +88,17 @@ app.post("/generate", async (req, res) => {
 
     const message = completion.choices[0].message.content;
 
-let character;
-try {
-  character = JSON.parse(message);
-} catch {
-  console.warn("❌ Failed to parse JSON:\n", message);
-  return res.status(200).json({
-    role: "Oops! Not improv-ready 😅",
-    quirk1: "This one came out a bit scrambled",
-    quirk2: "Try clicking generate again!"
-  });
-}
+    let character;
+    try {
+      character = JSON.parse(message);
+    } catch {
+      console.warn("❌ Failed to parse JSON:\n", message);
+      return res.status(200).json({
+        role: "Oops! Not improv-ready 😅",
+        quirk1: "This one came out a bit scrambled",
+        quirk2: "Try clicking generate again!"
+      });
+    }
 
     res.json({
       role: character.role || "—",
