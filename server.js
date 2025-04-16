@@ -19,13 +19,13 @@ const difficultyPrompts = {
     label: "Very Easy",
     prompt: `Create a very easy character for a young child to improv. Use simple words. Roles should be fun and recognizable like "clown" or "pirate". No names. Quirks should be easy to act like "loves to sing" or "hops on one foot". Respond ONLY in JSON with keys: role, quirk1, quirk2. Avoid repeating roles. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
   },
-  2: {
+    2: {
     label: "Medium",
-    prompt: `Create a quirky improv character with a fun role and two unusual quirks. Avoid names or titles like "Mr. Doodlebug". The role should be something like "roller skating baker" or "wildlife park operator". Quirks should be weird but clear, like "Only speaks in questions" or "Afraid of words starting with the letter D". Respond ONLY in JSON format with keys: role, quirk1, quirk2. No extra commentary. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
+    prompt: `You are an API. Respond ONLY in raw JSON format with keys: role, quirk1, quirk2. Do NOT add any explanation. The role should be quirky but simple (like "roller skating baker"). Quirks should be imaginative but readable (like "Only speaks in questions"). No names or titles. Output format: {"role":"example","quirk1":"example","quirk2":"example"}`
   },
   3: {
     label: "Hard",
-    prompt: `Create a clever improv character. Respond ONLY in valid JSON with these keys: role, quirk1, quirk2. The role should be unique but not abstract — things like "game show host", "wildlife park manager", or "conspiracy radio host". Quirks should be weird or ironic, like "asks invasive personal questions" or "thinks their reflection is a twin". NO names. NO intro or explanation. Output just the JSON like: {"role":"Game show host","quirk1":"Whispers the answers","quirk2":"Refuses to clap"}`
+    prompt: `Respond ONLY in raw JSON with keys: role, quirk1, quirk2. Do NOT include commentary, titles, or explanation. The role should be clever and ironic (e.g., "conspiracy radio host"). The quirks should be psychological, like "asks overly personal questions". No names. Output format: {"role":"example","quirk1":"example","quirk2":"example"}`
   },
   4: {
     label: "Very Hard",
