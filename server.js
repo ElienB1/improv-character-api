@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const stringSimilarity = require("string-similarity");
 const { OpenAI } = require("openai");
 
 dotenv.config();
@@ -12,6 +13,23 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
+// Rate-limiting (simple in-memory)
+const rateLimit = new Map();
+
+// Track last generated character
+let lastCharacter = {
+  role: "",
+  quirk1: "",
+  quirk2: ""
+};
+
+// Fuzzy similarity comparison
+function isTooSimilar(a, b) {
+  if (!a || !b) return false;
+  return stringSimilarity.compareTwoStrings(a.toLowerCase(), b.toLowerCase()) > 0.6;
+}
+
+// Prompts per difficulty (no fantasy, no fluff)
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
@@ -29,8 +47,9 @@ const difficultyPrompts = {
   }
 }
 Rules:
-• Role: everyday noun (teacher, baker). NO adjectives.
-• Ban whimsical, cosmic, magical, fantastical terms.`
+• Role: simple everyday noun only (e.g. teacher, baker, bus driver). No adjectives.
+• Quirks: realistic, short, familiar. 3–5 words max.
+• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
   },
   2: {
     label: "Medium",
@@ -48,8 +67,9 @@ Rules:
   }
 }
 Rules:
-• Short noun or noun with practical modifier.
-• Ban whimsical, cosmic, magical, fantastical terms.`
+• Role: short noun or noun with a grounded modifier (e.g. night-shift nurse).
+• Quirks: grounded and playful, 3–5 words.
+• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
   },
   3: {
     label: "Hard",
@@ -67,8 +87,9 @@ Rules:
   }
 }
 Rules:
-• ONE emotional adjective (e.g. pessimistic chef).
-• Ban whimsical, cosmic, magical, fantastical terms.`
+• Role: may include ONE emotional adjective (e.g. pessimistic teacher).
+• Quirks: psychological, ironic, realistic. Max 6 words.
+• No fantasy or sci-fi language. No whimsical, magical, cosmic, enchanted, alien, wizard, superhero, etc.`
   },
   4: {
     label: "Very Hard",
@@ -86,19 +107,10 @@ Rules:
   }
 }
 Rules:
-• One or two emotional adjectives before normal noun.
-• Ban whimsical, cosmic, magical, fantastical terms.
-• Quirks concise (≤6 words each), realistic.`
+• Role: can include up to TWO emotional or existential adjectives (e.g. "existential barista", "socially anxious plumber").
+• Quirks: oddly specific but realistic. Each ≤6 words, no punctuation.
+• Strictly ban all fantasy or sci-fi descriptors like whimsical, magical, cosmic, enchanted, alien, wizard, superhero.`
   }
-};
-
-const rateLimit = new Map();
-
-// Persistent state outside endpoint
-let lastCharacter = {
-  role: "",
-  quirk1: "",
-  quirk2: ""
 };
 
 app.post("/generate", async (req, res) => {
@@ -125,7 +137,7 @@ app.post("/generate", async (req, res) => {
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [{ role: "user", content: difficultyPrompts[difficulty].prompt }],
-        temperature: 0.9, // slightly higher temp to avoid duplicates
+        temperature: 0.9,
         max_tokens: 300
       });
 
@@ -134,13 +146,12 @@ app.post("/generate", async (req, res) => {
       character = JSON.parse(jsonTxt);
 
       attempts++;
-
       if (attempts >= maxAttempts) break;
 
     } while (
-      character.role === lastCharacter.role ||
-      character.quirk1 === lastCharacter.quirk1 ||
-      character.quirk2 === lastCharacter.quirk2
+      isTooSimilar(character.role, lastCharacter.role) ||
+      isTooSimilar(character.quirk1, lastCharacter.quirk1) ||
+      isTooSimilar(character.quirk2, lastCharacter.quirk2)
     );
 
     lastCharacter = {
@@ -159,20 +170,20 @@ app.post("/generate", async (req, res) => {
   } catch (err) {
     console.error("OpenAI / JSON parse error:", err);
     return res.status(200).json({
-      role: "Oops! Not improv-ready 😅",
+      role: "Oops! Not improv‑ready 😅",
       quirk1: "This one came out a bit scrambled",
       quirk2: "Try clicking generate again!",
       schema: {
         "@context": "https://schema.org",
         "@type": "Person",
         "@id": "#character",
-        "name": "Improviser",
-        "description": "A confused character who couldn’t decide what to be."
+        name: "Improviser",
+        description: "A confused character who couldn’t decide what to be."
       }
     });
   }
 });
 
 app.listen(port, () => {
-  console.log(`✅ API running on port ${port}`);
+  console.log(`✅ API running on http://localhost:${port}`);
 });
