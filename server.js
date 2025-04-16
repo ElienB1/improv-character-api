@@ -17,19 +17,19 @@ app.use(express.json());
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
-    prompt: `Create a very easy character for a young child to improv. Use simple words. Roles should be fun and recognizable like "clown" or "pirate". No names. Quirks should be easy to act like "loves to sing" or "hops on one foot". Respond ONLY in JSON with keys: role, quirk1, quirk2. Avoid repeating roles. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
+    prompt: `Respond ONLY in raw JSON using the keys: role, quirk1, quirk2. The role should be simple and recognizable for a young child (e.g., "clown", "pirate"). Do not use names or titles like "Mr. Wobblepants". Quirks should be very easy to act, like "hops on one foot" or "loves to sing". Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Adjectives that reflect emotion or personality (like "sad", "grumpy") are fine. Example: {"role":"Clown","quirk1":"Juggles invisible balls","quirk2":"Laughs every 5 seconds"}`
   },
-    2: {
-  label: "Medium",
-  prompt: `You are an API. Respond ONLY with raw JSON using the keys: role, quirk1, quirk2. The role should be playful and unique (like "roller skating baker" or "cloud photographer"). Do NOT use names or character titles. The quirks should be fun and imaginative (like "Only speaks in questions" or "Afraid of things starting with the letter D"). No explanation. No formatting. Example: {"role":"Cloud photographer","quirk1":"Carries a ladder everywhere","quirk2":"Names each cloud they see"}`
-},
+  2: {
+    label: "Medium",
+    prompt: `You are an API. Respond ONLY with raw JSON using the keys: role, quirk1, quirk2. The role should be playful and unique (like "roller skating baker" or "cloud photographer"). Do NOT use names or character titles. Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Adjectives that reflect mood or personality (like "pessimistic") are fine. The quirks should be fun and imaginative (like "Only speaks in questions" or "Afraid of things starting with the letter D"). No explanation. No formatting. Example: {"role":"Cloud photographer","quirk1":"Carries a ladder everywhere","quirk2":"Names each cloud they see"}`
+  },
   3: {
     label: "Hard",
-    prompt: `Respond ONLY in raw JSON with keys: role, quirk1, quirk2. Do NOT include commentary, titles, or explanation. The role should be clever and ironic (e.g., "conspiracy radio host"). The quirks should be psychological, like "asks overly personal questions". No names. Output format: {"role":"example","quirk1":"example","quirk2":"example"}`
+    prompt: `Respond ONLY in raw JSON with keys: role, quirk1, quirk2. Do NOT include commentary, titles, or explanation. The role should be clever and ironic (e.g., "conspiracy radio host", "pessimistic mime"). Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Mood or personality words like "grumpy" or "anxious" are allowed. The quirks should be psychological, like "asks overly personal questions" or "only eats foods that rhyme with their name". Example: {"role":"Conspiracy radio host","quirk1":"Whispers secrets to themselves","quirk2":"Believes pigeons are spies"}`
   },
   4: {
     label: "Very Hard",
-    prompt: `Create a surreal and absurd improv character. The role should be highly specific and advanced, like "professor of magical arts" or "championship breakdancer". Quirks should be long, unexpected, and funny—such as "Talks to food before eating it" or "Thinks they are fluent in Italian but they're not". Return ONLY strict JSON with the keys: role, quirk1, quirk2. Do NOT use character names or provide extra explanation. Example: {"role":"Chair therapist","quirk1":"Only speaks in metaphors","quirk2":"Keeps a live goldfish in one shoe"}`
+    prompt: `Create a surreal and absurd improv character. The role should be highly specific and advanced, like "professor of magical arts" or "championship breakdancer". Do not use names or character titles. Do not add descriptive or fantastical words like "whimsical" or "intergalactic". Personality-based words like "pessimistic", "sad", or "grumpy" are okay. Quirks should be long, weird, and funny (e.g., "talks to food before eating it", "thinks they are fluent in Italian but they're not"). Respond ONLY in strict JSON format like {"role":"Chair therapist","quirk1":"Only speaks in metaphors","quirk2":"Keeps a live goldfish in one shoe"}`
   }
 };
 
