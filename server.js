@@ -21,7 +21,7 @@ const difficultyPrompts = {
   },
   2: {
     label: "Medium",
-    prompt: `prompt: `Create a quirky improv character with a fun role and two unusual quirks. Avoid names or titles like "Mr. Doodlebug". The role should be something like "roller skating baker" or "wildlife park operator". Quirks should be weird but clear, like "Only speaks in questions" or "Afraid of words starting with the letter D". Respond ONLY in JSON format with keys: role, quirk1, quirk2. No extra commentary. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
+    prompt: `Create a quirky improv character with a fun role and two unusual quirks. Avoid names or titles like "Mr. Doodlebug". The role should be something like "roller skating baker" or "wildlife park operator". Quirks should be weird but clear, like "Only speaks in questions" or "Afraid of words starting with the letter D". Respond ONLY in JSON format with keys: role, quirk1, quirk2. No extra commentary. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
   },
   3: {
     label: "Hard",
@@ -32,7 +32,6 @@ const difficultyPrompts = {
     prompt: `Create a surreal and absurd improv character. The role should be highly specific and advanced, like "professor of magical arts" or "championship breakdancer". Quirks should be long, unexpected, and funny—such as "Talks to food before eating it" or "Thinks they are fluent in Italian but they're not". Return ONLY strict JSON with the keys: role, quirk1, quirk2. Do NOT use character names or provide extra explanation. Example: {"role":"Chair therapist","quirk1":"Only speaks in metaphors","quirk2":"Keeps a live goldfish in one shoe"}`
   }
 };
-
 
 // 🛡️ In-memory rate limiter
 const rateLimit = new Map(); // IP -> last request timestamp
