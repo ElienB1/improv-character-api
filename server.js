@@ -13,88 +13,31 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// 🎭 Prompt library with refined difficulty tiers
 const difficultyPrompts = {
   1: {
     label: "Very Easy",
-    prompt: `Create a very simple improv character for a young child. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
-
-RULES:
-• The role should be a basic, playful character (e.g. "clown", "pirate", "robot").
-• Quirks must describe physical actions or simple behaviors (e.g. "hops on one foot", "always sings when walking").
-• ❌ Do NOT include names (e.g. "Mr. Wiggles") or titles (e.g. "Captain", "Dr.").
-• ❌ No fantasy or scary roles. No personality descriptions.
-
-Example:
-{
-  "role": "Robot",
-  "quirk1": "Speaks in beep-boops",
-  "quirk2": "Loves bubbles"
-}`
+    prompt: `Create a very easy character for a young child to act out in an improv game. The role should be simple (like "clown", "mermaid", "robot", "pirate") and should NOT include names like "Mr. Wobblepants". Use clear, fun language. Avoid complex jobs or fancy words. Respond ONLY in JSON format with keys: role, quirk1, quirk2. Example: {"role":"Robot","quirk1":"Speaks in beep boops","quirk2":"Loves bubbles"}`
   },
-
   2: {
     label: "Medium",
-    prompt: `Create a quirky improv character with a real-world role and two unusual quirks. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
-
-RULES:
-• The role should be something plausible but fun (e.g. "ice cream truck driver", "librarian", "mail carrier").
-• Quirks should be surprising or slightly irrational (e.g. "afraid of words that start with D", "only speaks in questions").
-• ❌ No names or titles. Do NOT include "Mr.", "Dr.", "Captain", etc.
-• ❌ No fantasy elements or superpowers.
-
-Example:
-{
-  "role": "Librarian",
-  "quirk1": "Hums the national anthem whenever nervous",
-  "quirk2": "Is afraid of things that start with the letter D"
-}`
+    prompt: `Create a fun and quirky improv character. Use a more specific or unusual role (like "roller skating baker", "cloud photographer", "birthday clown"). The quirks can be strange, like "only speaks in questions" or "is afraid of things that start with the letter D". Do NOT use character names. Respond ONLY in JSON with role, quirk1, quirk2. Example: {"role":"Roller skating baker","quirk1":"Invents frosting flavors","quirk2":"Is scared of sprinkles"}`
   },
-
   3: {
     label: "Hard",
-    prompt: `Create a clever improv character with a niche or oddly specific role, and two strange, socially quirky behaviors. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
-
-RULES:
-• The role must be grounded but unique (e.g. "wildlife park operator", "game show host", "convention planner").
-• Quirks should be unusual fixations, anxieties, or habits (e.g. "collects used receipts", "asks people’s blood type when meeting them").
-• ❌ No fantasy/sci-fi roles, no titles, and no character names.
-
-Example:
-{
-  "role": "Game show host",
-  "quirk1": "Keeps score in Roman numerals",
-  "quirk2": "Obsessed with learning people’s middle names"
-}`
+    prompt: `Create a more complex improv character. The role should be slightly advanced or ironic (e.g., "game show host", "wildlife park operator", "competitive whisperer"). The quirks should be clever or abstract, like "obsessed with knowing personal facts about everyone" or "only eats food that rhymes with their name". Avoid repeating the same role immediately. Respond ONLY in JSON format with keys: role, quirk1, quirk2.`
   },
-
   4: {
     label: "Very Hard",
-    prompt: `Create a surreal and absurd improv character with an extremely unusual role and two long, comedic quirks. Respond ONLY in valid JSON format with the keys: role, quirk1, quirk2.
-
-RULES:
-• The role should sound real but absurd or ironic (e.g. "trophy organizer", "professional whisper coach", "breakdance championship winner").
-• Quirks must be complex, specific, and humorous (e.g. "talks to their food before eating it", "thinks they're fluent in Italian but clearly aren't").
-• ❌ No names or titles (e.g. "Dr.", "Captain", "Mister", etc.).
-• ❌ No fantasy/sci-fi roles or magical creatures.
-
-Example:
-{
-  "role": "Trophy organizer",
-  "quirk1": "Talks to their food before eating it",
-  "quirk2": "Thinks they’re fluent in Italian, but clearly aren’t"
-}`
+    prompt: `Create an absurd improv character. The role should be unusual or niche (like "breakdance champion", "professor of magical arts", "zookeeper of imaginary creatures"). The quirks should be funny, ironic or bizarre — like "thinks they're fluent in Italian but absolutely are not" or "speaks to their food before eating it". Avoid character names and space-related ideas. Respond ONLY in JSON format with keys: role, quirk1, quirk2.`
   }
 };
 
-// 🧱 In-memory rate limiter
-const rateLimit = new Map(); // IP -> timestamp
+const rateLimit = new Map();
 
 app.post("/generate", async (req, res) => {
   const { difficulty, cf_token } = req.body;
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
-  // ⏱️ Rate limit: 1 request per 5 seconds
   const now = Date.now();
   const last = rateLimit.get(ip) || 0;
   if (now - last < 5000) {
@@ -102,12 +45,10 @@ app.post("/generate", async (req, res) => {
   }
   rateLimit.set(ip, now);
 
-  // ✅ Validate difficulty
   if (!difficulty || !difficultyPrompts[difficulty]) {
     return res.status(400).json({ error: "Invalid difficulty" });
   }
 
-  // ✅ Turnstile check
   if (process.env.CF_TURNSTILE_SECRET) {
     try {
       const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
@@ -130,7 +71,6 @@ app.post("/generate", async (req, res) => {
     }
   }
 
-  // 🤖 Generate from OpenAI
   const prompt = difficultyPrompts[difficulty].prompt;
 
   try {
